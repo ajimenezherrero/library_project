@@ -171,7 +171,6 @@ public class ReviewResource {
 	@DELETE
 	@Path("/{idreview}")
 	public void deleteSting(@PathParam("idreview") String idreview,@PathParam("idbook") String idbook) {
-		
 		validateUserDelete(idreview,idbook);
 		Connection conn = null;
 		try {
@@ -207,10 +206,18 @@ public class ReviewResource {
 		return "delete from reviews where idreview = ?";
 	}
 	
+	private void validateUserDelete(String idreview, String idbook) {
+		Review currentReview = getReviewFromDatabase(idreview, idbook);
+		if ((!security.getUserPrincipal().getName().equals(currentReview.getUsername())) && (!security.isUserInRole("administrator")))
+			throw new ForbiddenException("You are not allowed to modify this sting.");
+	}
+	
+	
+	
 	@PUT
 	@Path("/{idreview}")
-	@Consumes(MediaType.LIBRARY_API_BOOK)
-	@Produces(MediaType.LIBRARY_API_BOOK)
+	@Consumes(MediaType.LIBRARY_API_REVIEW)
+	@Produces(MediaType.LIBRARY_API_REVIEW)
 	public Review updateBook(@PathParam("idbook") String idbook,@PathParam("idreview") String idreview, Review review) {
 		validateUpdateReview(review);
 		validateUserPut(idreview,idbook);
@@ -228,10 +235,8 @@ public class ReviewResource {
 			String sql = buildUpdateReview();
 			stmt = conn.prepareStatement(sql);
 
-			stmt.setString(1, security.getUserPrincipal().getName());
-			stmt.setInt(2, Integer.valueOf(idbook));
-			stmt.setString(3, review.getText());
-			stmt.setInt(4, Integer.valueOf(idreview));
+			stmt.setString(1, review.getText());
+			stmt.setInt(2, Integer.valueOf(idreview));
 			
 			int rows = stmt.executeUpdate();
 			if (rows == 1)
@@ -257,13 +262,10 @@ public class ReviewResource {
 	}
 	
 	private String buildUpdateReview() {
-		return "update book set username=ifnull(?, username),idbook=ifnull(?, idbook),text=ifnull(?, text) where idreview=?";
+		return "update reviews set text=ifnull(?, text) where idreview = ? ";
 	}
 	
 	private void validateUpdateReview(Review review) {
-		if (review.getUsername() != null & review.getUsername().length() > 20)
-			throw new BadRequestException(
-					"Username can't be greater than 20 characters.");
 		if (review.getText() != null & review.getText().length() > 500)
 			throw new BadRequestException(
 					"Text can't be greater than 500 characters.");
@@ -281,12 +283,7 @@ public class ReviewResource {
 			throw new ForbiddenException(
 					"You are not allowed to modify this sting.");
 	}
-	private void validateUserDelete(String idreview, String idbook) {
-		Review currentReview = getReviewFromDatabase(idreview, idbook);
-		if (!security.getUserPrincipal().getName().equals(currentReview.getUsername())||!security.isUserInRole("administrator"))
-			throw new ForbiddenException(
-					"You are not allowed to modify this sting.");
-	}
+	
 	
 	private Review getReviewFromDatabase(String idreview, String idbook) {
 		Review review = new Review();
