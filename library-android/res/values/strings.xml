@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">LibraryMainActivity</string>
+    <string name="l_reviews">Reviews</string>
+    <string name="l_writereview">Write Review</string>
+    <string name="l_text">Text Review</string>
+    <string name="l_search">Search</string>
+    <string name="lb_cancel">Cancel</string>
+    <string name="lb_send">Send</string>
+    <string name="lb_search">Search</string>
+</resources>
